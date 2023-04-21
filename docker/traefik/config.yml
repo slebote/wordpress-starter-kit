@@ -1,0 +1,15 @@
+http:
+  routers:
+    traefik:
+      rule: "Host(`traefik.local.fr`)"
+      service: "api@internal"
+      tls:
+        domains:
+          - main: "local.fr"
+            sans:
+              - "*.local.fr"
+
+tls:
+  certificates:
+    - certFile: "/etc/certificates/local.fr.crt"
+      keyFile: "/etc/certificates/local.fr.key"

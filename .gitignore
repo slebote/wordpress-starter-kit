@@ -1,0 +1,17 @@
+# IDE
+.idea
+
+# Environment
+.env
+
+# Wordpress
+## no codebase kept
+web/*
+
+## all codebase kept except config
+#web/wp-config.php
+
+## development purpose
+#web/.htaccess
+#web/wp-config.php
+#web/wp-content

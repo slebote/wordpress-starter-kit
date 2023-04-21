@@ -1,0 +1,78 @@
+version: '3.1'
+
+services:
+
+  # Wordpress: apache2/php
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "80"
+      - "443"
+    env_file:
+      - .env
+    volumes:
+      - ./web:/var/www/html:cached
+    labels:
+      # Enable traefik
+      - traefik.enable=true
+      # Entrypoint, port and host config
+      - traefik.http.routers.sf-api-gateway.entrypoints=https
+      - traefik.http.services.sf-api-gateway.loadbalancer.server.port=80
+      - traefik.http.routers.sf-api-gateway.rule=Host(`${WORDPRESS_HOST}`)
+      # Enable TLS
+      - traefik.http.routers.sf-api-gateway.tls=true
+      - traefik.http.routers.sf-api-gateway.tls.certresolver=dnsChallengeResolver
+      - traefik.http.routers.sf-api-gateway.tls.domains[0].main=${WORDPRESS_HOST}
+    depends_on:
+      - traefik
+      - mariadb
+    networks:
+      - traefik
+
+  # Database: mariadb
+  mariadb:
+    image: mariadb
+    ports:
+      - "3306"
+    env_file:
+      - .env
+    volumes:
+      # SQL to execute on first creation
+      - ./docker/mariadb/initdb.d/:/docker-entrypoint-initdb.d/
+      # Save DB to Docker volume
+      - mariadb:/var/lib/mysql
+    depends_on:
+      - traefik
+    networks:
+      - traefik
+
+  # Networking: traefik/nginx
+  traefik:
+    image: traefik:2.9
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Map the static conf into the container
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # Map the dynamic conf into the container
+      - ./docker/traefik/config.yml:/etc/traefik/config.yml:ro
+      # Map the certificates into the container
+      - ./docker/traefik/certificates/:/etc/certs:ro
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - traefik.enable=true
+      # Use "traefik" router configuration defined into the dynamic config file: ./traefik/config.yml
+      - traefik.http.routers.traefik=true
+
+volumes:
+  mariadb:
+
+networks:
+  traefik:
+    external: true
