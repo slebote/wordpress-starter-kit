@@ -16,13 +16,13 @@ services:
       # Enable traefik
       - traefik.enable=true
       # Entrypoint, port and host config
-      - traefik.http.routers.sf-api-gateway.entrypoints=https
-      - traefik.http.services.sf-api-gateway.loadbalancer.server.port=80
-      - traefik.http.routers.sf-api-gateway.rule=Host(`${WORDPRESS_HOST}`)
+      - traefik.http.routers.wordpress.entrypoints=https
+      - traefik.http.services.wordpress.loadbalancer.server.port=80
+      - traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_HOST}`)
       # Enable TLS
-      - traefik.http.routers.sf-api-gateway.tls=true
-      - traefik.http.routers.sf-api-gateway.tls.certresolver=dnsChallengeResolver
-      - traefik.http.routers.sf-api-gateway.tls.domains[0].main=${WORDPRESS_HOST}
+      - traefik.http.routers.wordpress.tls=true
+      - traefik.http.routers.wordpress.tls.certresolver=dnsChallengeResolver
+      - traefik.http.routers.wordpress.tls.domains[0].main=${WORDPRESS_HOST}
     depends_on:
       - traefik
       - mariadb
